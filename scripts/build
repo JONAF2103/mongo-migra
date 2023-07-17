@@ -1,0 +1,6 @@
+#!/bin/bash
+
+rm -rf dist
+tsc
+cp src/actions/create/migration-templates/up.template.ts dist/actions/create/migration-templates/up.template.ts
+cp src/actions/create/migration-templates/down.template.ts dist/actions/create/migration-templates/down.template.ts
