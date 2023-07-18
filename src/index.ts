@@ -19,9 +19,9 @@ async function execute(args: Map<string, string>): Promise<void> {
     configFilePath = resolve(configurationFileName);
   }
   try {
-    const configFile = resolve(configFilePath);
     let configuration: Configuration;
-    if (existsSync(configFile)) {
+    if (existsSync(configFilePath)) {
+      const configFile = resolve(configFilePath);
       console.log(`Using configuration file ${configFile}`);
       configuration = (await import(configFile)).default;
     } else {
