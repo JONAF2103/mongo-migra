@@ -42,9 +42,9 @@ async function execute(args) {
         configFilePath = (0, node_path_1.resolve)(configurationFileName);
     }
     try {
-        const configFile = (0, node_path_1.resolve)(configFilePath);
         let configuration;
-        if ((0, node_fs_1.existsSync)(configFile)) {
+        if ((0, node_fs_1.existsSync)(configFilePath)) {
+            const configFile = (0, node_path_1.resolve)(configFilePath);
             console.log(`Using configuration file ${configFile}`);
             configuration = (await (_a = configFile, Promise.resolve().then(() => __importStar(require(_a))))).default;
         }

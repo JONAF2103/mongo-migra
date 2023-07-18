@@ -1,4 +1,5 @@
 #!/bin/bash
 
+npm run build
 rm -rf ./bundle
 cp -r ./dist ./bundle
