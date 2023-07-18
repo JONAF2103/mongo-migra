@@ -1,6 +1,6 @@
 {
   "name": "mongo-migra",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "This project it's a migration tool for mongodb databases",
   "main": "index.js",
   "scripts": {
