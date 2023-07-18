@@ -1,5 +1,5 @@
 {
-  "name": "mongo-migrations",
+  "name": "mongo-migra",
   "version": "1.0.0",
   "description": "This project it's a migration tool for mongodb databases",
   "main": "index.js",
@@ -8,7 +8,7 @@
     "execute": "scripts/execute"
   },
   "bin": {
-    "mongo-migrations": "bin/mongo-migrations.js"
+    "mongo-migra": "bin/mongo-migra.js"
   },
   "author": "",
   "license": "ISC",
