@@ -1,6 +1,6 @@
 {
   "name": "mongo-migra",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "This project it's a migration tool for mongodb databases",
   "main": "index.js",
   "scripts": {
@@ -10,8 +10,9 @@
   "bin": {
     "mongo-migra": "bin/mongo-migra.js"
   },
-  "author": "",
-  "license": "ISC",
+  "repository": "https://github.com/JONAF2103/mongo-migra",
+  "author": "jonathan.franco.2103@gmail.com",
+  "license": "GNUV3",
   "devDependencies": {
     "@types/node": "^16.0.0",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
