@@ -5,10 +5,20 @@ import {parseArguments} from "./utils";
 import {DEFAULT_CONFIG} from "./configuration";
 import {Configuration} from "./types";
 import {showHelp} from "./help";
+
+const configurationFileName = 'mongo-migra.ts';
+
 async function execute(args: Map<string, string>): Promise<void> {
   const actionName = args.get('action');
+  let configFilePath;
+  if (args.has('config')) {
+    if (!existsSync(resolve(args.get('config')))) {
+      throw new Error(`${resolve(args.get('config'))} doesn't exists`);
+    }
+  } else if (existsSync(resolve(configurationFileName))) {
+    configFilePath = resolve(configurationFileName);
+  }
   try {
-    const configFilePath = args.has('config') ? resolve(args.get('config')) : './configuration.ts';
     const configFile = resolve(configFilePath);
     let configuration: Configuration;
     if (existsSync(configFile)) {
