@@ -11,7 +11,10 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "sourceRoot": "src",
-    "declaration": true
+    "declaration": true,
+    "paths": {
+      "mongo-migra": ["./src/types"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

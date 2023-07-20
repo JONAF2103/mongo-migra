@@ -5,8 +5,12 @@ import {parseArguments} from "./utils";
 import {DEFAULT_CONFIG} from "./configuration";
 import {Configuration} from "./types";
 import {showHelp} from "./help";
+import {transpile} from "typescript";
+import {readFileSync} from "fs";
 
 const configurationFileName = 'mongo-migra.ts';
+
+export * from './types';
 
 async function execute(args: Map<string, string>): Promise<void> {
   const actionName = args.get('action');
@@ -23,7 +27,9 @@ async function execute(args: Map<string, string>): Promise<void> {
     if (existsSync(configFilePath)) {
       const configFile = resolve(configFilePath);
       console.log(`Using configuration file ${configFile}`);
-      configuration = (await import(configFile)).default;
+      const configFileContent = transpile(readFileSync(configFile, 'utf-8'), {esModuleInterop: true});
+      configuration = eval(configFileContent);
+      console.log('Config', configuration);
     } else {
       console.log('Using default configuration...');
       configuration = DEFAULT_CONFIG;
