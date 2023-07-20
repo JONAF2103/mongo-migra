@@ -15,6 +15,9 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -28,9 +31,12 @@ const node_fs_1 = require("node:fs");
 const utils_1 = require("./utils");
 const configuration_1 = require("./configuration");
 const help_1 = require("./help");
+const typescript_1 = require("typescript");
+const fs_1 = require("fs");
 const configurationFileName = 'mongo-migra.ts';
+__exportStar(require("./types"), exports);
 async function execute(args) {
-    var _a, _b;
+    var _a;
     const actionName = args.get('action');
     let configFilePath;
     if (args.has('config')) {
@@ -46,13 +52,15 @@ async function execute(args) {
         if ((0, node_fs_1.existsSync)(configFilePath)) {
             const configFile = (0, node_path_1.resolve)(configFilePath);
             console.log(`Using configuration file ${configFile}`);
-            configuration = (await (_a = configFile, Promise.resolve().then(() => __importStar(require(_a))))).default;
+            const configFileContent = (0, typescript_1.transpile)((0, fs_1.readFileSync)(configFile, 'utf-8'), { esModuleInterop: true });
+            configuration = eval(configFileContent);
+            console.log('Config', configuration);
         }
         else {
             console.log('Using default configuration...');
             configuration = configuration_1.DEFAULT_CONFIG;
         }
-        await (await (_b = (`./actions/${actionName}`), Promise.resolve().then(() => __importStar(require(_b))))).default(configuration);
+        await (await (_a = (`./actions/${actionName}`), Promise.resolve().then(() => __importStar(require(_a))))).default(configuration);
     }
     catch (error) {
         if (error.code === 'MODULE_NOT_FOUND') {
