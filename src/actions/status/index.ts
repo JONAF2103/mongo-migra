@@ -1,5 +1,6 @@
 import {MongoClient} from "mongodb";
 import {Configuration, Migration} from "../../types";
+import {ADMIN_DBS} from "../../constants";
 
 export default async function status(configuration: Configuration): Promise<void> {
   const mongoClient = await new MongoClient(configuration.uri).connect();
@@ -12,6 +13,9 @@ export default async function status(configuration: Configuration): Promise<void
   } else {
     const dbs = await mongoClient.db().admin().listDatabases();
     for (const db of dbs.databases) {
+      if (ADMIN_DBS.some(name => db.name === name) && !configuration.includeAdminDbs) {
+        continue;
+      }
       const migrations = mongoClient.db(db.name).collection<Migration>(configuration.changeLogCollectionName).find();
       for await (const migration of migrations) {
         appliedMigrations.push(migration);

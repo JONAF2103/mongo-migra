@@ -21,6 +21,7 @@ export interface Configuration {
   dbName?: string;
   changeLogCollectionName?: string;
   migrationsFolderPath?: string;
+  includeAdminDbs?: boolean;
   env?: Configuration;
 }
 

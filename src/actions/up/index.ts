@@ -7,6 +7,7 @@ import {ModuleKind, transpile} from 'typescript';
 
 import {AvailableMigration, Configuration, Migration, MigrationStats, MigrationStatus} from "../../types";
 import {transpileInMemory} from "../../utils";
+import {ADMIN_DBS} from "../../constants";
 
 interface UpMigrationProps {
   mongoClient: MongoClient;
@@ -168,6 +169,9 @@ export default async function up(configuration: Configuration): Promise<void> {
     console.log(`Migrating up all dbs on ${configuration.uri}...`);
     const dbs = await mongoClient.db().admin().listDatabases();
     for (const db of dbs.databases) {
+      if (ADMIN_DBS.some(name => db.name === name) && !configuration.includeAdminDbs) {
+        continue;
+      }
       await executeUpMigration({
         mongoClient,
         dbName: db.name,

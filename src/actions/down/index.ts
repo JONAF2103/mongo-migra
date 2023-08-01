@@ -7,6 +7,7 @@ import {transpile} from 'typescript';
 
 import {AvailableMigration, Configuration, Migration, MigrationStats, MigrationStatus} from "../../types";
 import {parseArguments, transpileInMemory} from "../../utils";
+import {ADMIN_DBS} from "../../constants";
 
 interface DownMigrationProps {
   mongoClient: MongoClient;
@@ -144,6 +145,9 @@ export default async function down(configuration: Configuration): Promise<void> 
     console.log(`Migrating down all dbs on ${configuration.uri}...`);
     const dbs = await mongoClient.db().admin().listDatabases();
     for (const db of dbs.databases) {
+      if (ADMIN_DBS.some(name => db.name === name) && !configuration.includeAdminDbs) {
+        continue;
+      }
       await executeDownMigration({
         mongoClient,
         dbName: db.name,
