@@ -34,5 +34,6 @@ Here are a list of available commands:
 * `mongo-migra action=status`: shows the migrations status on the db.
 * `mongo-migra action=init`: generates the initial configuration in order to use this program.
 * In all the commands the param `config` can be set with a custom file path in order to load a different configuration.
+* You have an optional parameter `verbose` to output the configuration used by the migrator.
 
 You can always use `mongo-migra --help` in order to see the available commands help.

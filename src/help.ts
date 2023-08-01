@@ -18,7 +18,7 @@ function showCommandSpecs(commandSpecs: CommandSpec[]): void {
 
 export function showHelp(): void {
   console.group('Command Syntax: ');
-  console.log('mongo-migra config=<optional> action=<create/delete/init/status/up/down> <parameters:name=value>\n');
+  console.log('mongo-migra config=<optional> verbose=<optional> action=<create/delete/init/status/up/down> <parameters:name=value>\n');
   console.groupEnd();
   console.group('Here are a list of available commands:\n');
   showCommandSpecs([
