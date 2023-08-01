@@ -10,6 +10,7 @@ const mongodb_1 = require("mongodb");
 const node_crypto_1 = __importDefault(require("node:crypto"));
 const types_1 = require("../../types");
 const utils_1 = require("../../utils");
+const constants_1 = require("../../constants");
 async function getFileChecksum(path) {
     return new Promise(function (resolve, reject) {
         const hash = node_crypto_1.default.createHash('md5');
@@ -142,6 +143,9 @@ async function down(configuration) {
         console.log(`Migrating down all dbs on ${configuration.uri}...`);
         const dbs = await mongoClient.db().admin().listDatabases();
         for (const db of dbs.databases) {
+            if (constants_1.ADMIN_DBS.some(name => db.name === name) && !configuration.includeAdminDbs) {
+                continue;
+            }
             await executeDownMigration({
                 mongoClient,
                 dbName: db.name,
