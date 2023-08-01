@@ -31,13 +31,25 @@ const node_fs_1 = require("node:fs");
 const utils_1 = require("./utils");
 const configuration_1 = require("./configuration");
 const help_1 = require("./help");
-const typescript_1 = require("typescript");
-const fs_1 = require("fs");
 const configurationFileName = 'mongo-migra.ts';
 __exportStar(require("./types"), exports);
+function mergeEnvConfiguration(configuration) {
+    if (!configuration.env) {
+        return configuration;
+    }
+    for (const parameter of Object.keys(configuration.env)) {
+        const envVarName = configuration.env[parameter];
+        const value = process.env[envVarName];
+        if (value) {
+            configuration[parameter] = value;
+        }
+    }
+    return configuration;
+}
 async function execute(args) {
     var _a;
     const actionName = args.get('action');
+    const verbose = args.has('verbose');
     let configFilePath;
     if (args.has('config')) {
         if (!(0, node_fs_1.existsSync)((0, node_path_1.resolve)(args.get('config')))) {
@@ -51,14 +63,20 @@ async function execute(args) {
         let configuration;
         if ((0, node_fs_1.existsSync)(configFilePath)) {
             const configFile = (0, node_path_1.resolve)(configFilePath);
-            console.log(`Using configuration file ${configFile}`);
-            const configFileContent = (0, typescript_1.transpile)((0, fs_1.readFileSync)(configFile, 'utf-8'), { esModuleInterop: true });
-            configuration = eval(configFileContent);
-            console.log('Config', configuration);
+            if (verbose) {
+                console.log(`Using configuration file ${configFile}`);
+            }
+            configuration = (0, utils_1.transpileInMemory)(configFile);
         }
         else {
-            console.log('Using default configuration...');
+            if (verbose) {
+                console.log('Using default configuration...');
+            }
             configuration = configuration_1.DEFAULT_CONFIG;
+        }
+        configuration = mergeEnvConfiguration(configuration);
+        if (verbose) {
+            console.log('Configuration value', configuration);
         }
         await (await (_a = (`./actions/${actionName}`), Promise.resolve().then(() => __importStar(require(_a))))).default(configuration);
     }

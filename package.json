@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "build:dev": "npm run build && npm run prepack",
     "build": "scripts/build",
     "execute": "scripts/execute",
     "prepack": "scripts/bundleBin"

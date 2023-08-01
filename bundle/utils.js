@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseArguments = void 0;
+exports.transpileInMemory = exports.parseArguments = void 0;
+const typescript_1 = require("typescript");
+const fs_1 = require("fs");
 function parseArguments(requiredParameters = [], argvIndex = 2) {
     const argMap = new Map();
     process.argv.slice(argvIndex).forEach((arg) => {
@@ -15,4 +17,25 @@ function parseArguments(requiredParameters = [], argvIndex = 2) {
     return argMap;
 }
 exports.parseArguments = parseArguments;
+function transpileInMemory(file) {
+    return eval((0, typescript_1.transpileModule)((0, fs_1.readFileSync)(file, 'utf-8'), {
+        compilerOptions: {
+            target: typescript_1.ScriptTarget.ES2016,
+            module: typescript_1.ModuleKind.CommonJS,
+            moduleResolution: typescript_1.ModuleResolutionKind.NodeJs,
+            resolveJsonModule: true,
+            sourceMap: false,
+            noImplicitAny: false,
+            emitDecoratorMetadata: true,
+            experimentalDecorators: true,
+            esModuleInterop: true,
+            declaration: true,
+            allowJs: true,
+            noLib: true,
+            noResolve: true,
+            isolatedModules: true,
+        },
+    }).outputText);
+}
+exports.transpileInMemory = transpileInMemory;
 //# sourceMappingURL=utils.js.map

@@ -3,9 +3,10 @@ import {resolve} from "node:path";
 import {existsSync} from "node:fs";
 import {ClientSession, MongoClient} from "mongodb";
 import crypto from 'node:crypto';
-import {transpile} from 'typescript';
+import {ModuleKind, transpile} from 'typescript';
 
 import {AvailableMigration, Configuration, Migration, MigrationStats, MigrationStatus} from "../../types";
+import {transpileInMemory} from "../../utils";
 
 interface UpMigrationProps {
   mongoClient: MongoClient;
@@ -65,8 +66,7 @@ async function executeUpMigration({mongoClient, dbName, availableMigrations, cha
         session = await mongoClient.startSession();
       }
       try {
-        const transpiledMigration = transpile(readFileSync(resolve(availableMigration.location, 'up.ts'), 'utf-8'), {esModuleInterop: true});
-        const migration = eval(transpiledMigration);
+        const migration = transpileInMemory(resolve(availableMigration.location, 'up.ts'));
         if (replicaSetEnabled && session) {
           await session.withTransaction(async () => {
             await migration(mongoClient, session);

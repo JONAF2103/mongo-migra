@@ -6,7 +6,7 @@ import crypto from 'node:crypto';
 import {transpile} from 'typescript';
 
 import {AvailableMigration, Configuration, Migration, MigrationStats, MigrationStatus} from "../../types";
-import {parseArguments} from "../../utils";
+import {parseArguments, transpileInMemory} from "../../utils";
 
 interface DownMigrationProps {
   mongoClient: MongoClient;
@@ -61,8 +61,7 @@ async function executeDownMigration({mongoClient, dbName, availableMigrations, c
       const availableMigration = availableMigrations.find(migration => migration.name === appliedMigration.name);
       const downChecksum = await getFileChecksum(resolve(availableMigration.location, 'down.ts'));
       const downChecksumDiff = downChecksum !== appliedMigration.downChecksum;
-      const transpiledMigration = transpile(readFileSync(resolve(availableMigration.location, 'down.ts'), 'utf-8'), {esModuleInterop: true});
-      const migration = eval(transpiledMigration);
+      const migration = transpileInMemory(resolve(availableMigration.location, 'down.ts'));
       const replicaSetEnabled = configuration.uri.indexOf('replicaSet') !== -1;
       let session: ClientSession = null;
       if (replicaSetEnabled) {

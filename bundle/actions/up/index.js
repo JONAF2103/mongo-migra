@@ -8,8 +8,8 @@ const node_path_1 = require("node:path");
 const node_fs_1 = require("node:fs");
 const mongodb_1 = require("mongodb");
 const node_crypto_1 = __importDefault(require("node:crypto"));
-const typescript_1 = require("typescript");
 const types_1 = require("../../types");
+const utils_1 = require("../../utils");
 async function getFileChecksum(path) {
     return new Promise(function (resolve, reject) {
         const hash = node_crypto_1.default.createHash('md5');
@@ -60,8 +60,7 @@ async function executeUpMigration({ mongoClient, dbName, availableMigrations, ch
                 session = await mongoClient.startSession();
             }
             try {
-                const transpiledMigration = (0, typescript_1.transpile)((0, fs_1.readFileSync)((0, node_path_1.resolve)(availableMigration.location, 'up.ts'), 'utf-8'), { esModuleInterop: true });
-                const migration = eval(transpiledMigration);
+                const migration = (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'up.ts'));
                 if (replicaSetEnabled && session) {
                     await session.withTransaction(async () => {
                         await migration(mongoClient, session);

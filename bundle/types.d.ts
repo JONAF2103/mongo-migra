@@ -13,10 +13,11 @@ export interface Migration {
     errorMessage?: string;
 }
 export interface Configuration {
-    uri: string;
+    uri?: string;
     dbName?: string;
-    changeLogCollectionName: string;
-    migrationsFolderPath: string;
+    changeLogCollectionName?: string;
+    migrationsFolderPath?: string;
+    env?: Configuration;
 }
 export interface AvailableMigration {
     name: string;
