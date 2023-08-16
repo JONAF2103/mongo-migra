@@ -1,1 +1,1 @@
-{"version":3,"file":"up.template.js","sourceRoot":"src/","sources":["actions/create/migration-templates/up.template.ts"],"names":[],"mappings":";;;AAEO,KAAK,UAAU,EAAE,CAAC,MAAmB,EAAE,OAAuB,IAAkB,CAAC;AAAxF,gBAAwF"}
+{"version":3,"file":"up.template.js","sourceRoot":"src/","sources":["actions/create/migration-templates/up.template.ts"],"names":[],"mappings":";;;AAEO,KAAK,UAAU,EAAE,CAAC,MAAmB,EAAE,EAAM,EAAE,OAAuB,IAAkB,CAAC;AAAhG,gBAAgG"}

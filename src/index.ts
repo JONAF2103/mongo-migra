@@ -24,9 +24,20 @@ function mergeEnvConfiguration(configuration: Configuration): Configuration {
   return configuration;
 }
 
+function muteConsole() {
+  Object.keys(console).forEach(key => {
+    console[key] = function() {};
+  });
+}
+
 async function execute(args: Map<string, string>): Promise<void> {
   const actionName = args.get('action');
   const verbose = args.has('verbose');
+  const silent = args.has('silent');
+  if (silent && actionName !== 'status') {
+    console.log('Executing on silent mode...');
+    muteConsole();
+  }
   let configFilePath: string;
   if (args.has('config')) {
     if (!existsSync(resolve(args.get('config')))) {

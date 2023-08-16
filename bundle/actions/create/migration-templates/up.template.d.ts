@@ -1,2 +1,2 @@
-import { ClientSession, MongoClient } from "mongodb";
-export declare function up(client: MongoClient, session?: ClientSession): Promise<void>;
+import { ClientSession, Db, MongoClient } from "mongodb";
+export declare function up(client: MongoClient, db: Db, session?: ClientSession): Promise<void>;

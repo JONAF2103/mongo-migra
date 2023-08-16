@@ -85,12 +85,12 @@ async function executeDownMigration({ mongoClient, dbName, availableMigrations, 
             try {
                 if (replicaSetEnabled && session) {
                     await session.withTransaction(async () => {
-                        await down(mongoClient, session);
+                        await down(mongoClient, db, session);
                     });
                     await session.commitTransaction();
                 }
                 else {
-                    await down(mongoClient);
+                    await down(mongoClient, db);
                 }
                 migrationStats.push({
                     Name: availableMigration.name,

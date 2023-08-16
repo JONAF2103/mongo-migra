@@ -64,12 +64,12 @@ async function executeUpMigration({ mongoClient, dbName, availableMigrations, ch
                 const { up } = await (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'up.ts'), (0, node_path_1.resolve)(configuration.migrationsFolderPath));
                 if (replicaSetEnabled && session) {
                     await session.withTransaction(async () => {
-                        await up(mongoClient, session);
+                        await up(mongoClient, db, session);
                     });
                     await session.commitTransaction();
                 }
                 else {
-                    await up(mongoClient);
+                    await up(mongoClient, db);
                 }
                 migrationStats.push({
                     Name: availableMigration.name,
