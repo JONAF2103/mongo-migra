@@ -31,7 +31,7 @@ const node_fs_1 = require("node:fs");
 const utils_1 = require("./utils");
 const configuration_1 = require("./configuration");
 const help_1 = require("./help");
-const configurationFileName = 'mongo-migra.ts';
+const CONFIGURATION_DEFAULT_FILE = 'mongo-migra.ts';
 __exportStar(require("./types"), exports);
 function mergeEnvConfiguration(configuration) {
     if (!configuration.env) {
@@ -56,8 +56,8 @@ async function execute(args) {
             throw new Error(`${(0, node_path_1.resolve)(args.get('config'))} doesn't exists`);
         }
     }
-    else if ((0, node_fs_1.existsSync)((0, node_path_1.resolve)(configurationFileName))) {
-        configFilePath = (0, node_path_1.resolve)(configurationFileName);
+    else if ((0, node_fs_1.existsSync)((0, node_path_1.resolve)(CONFIGURATION_DEFAULT_FILE))) {
+        configFilePath = (0, node_path_1.resolve)(CONFIGURATION_DEFAULT_FILE);
     }
     try {
         let configuration;
@@ -66,7 +66,7 @@ async function execute(args) {
             if (verbose) {
                 console.log(`Using configuration file ${configFile}`);
             }
-            configuration = (0, utils_1.transpileInMemory)(configFile);
+            configuration = (await (0, utils_1.transpileInMemory)(configFile)).default;
         }
         else {
             if (verbose) {
@@ -81,7 +81,7 @@ async function execute(args) {
         await (await (_a = (`./actions/${actionName}`), Promise.resolve().then(() => __importStar(require(_a))))).default(configuration);
     }
     catch (error) {
-        if (error.code === 'MODULE_NOT_FOUND') {
+        if (error?.code === 'MODULE_NOT_FOUND') {
             throw new Error(`Invalid action name ${actionName}`);
         }
         throw error;

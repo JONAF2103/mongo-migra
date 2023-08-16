@@ -17,6 +17,7 @@ export interface Configuration {
     dbName?: string;
     changeLogCollectionName?: string;
     migrationsFolderPath?: string;
+    tsConfigFile?: string;
     includeAdminDbs?: boolean;
     env?: Configuration;
 }

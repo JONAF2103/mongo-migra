@@ -1,9 +1,8 @@
-import {createReadStream, readdirSync, readFileSync} from "fs";
+import {createReadStream, lstatSync, readdirSync} from "fs";
 import {resolve} from "node:path";
 import {existsSync} from "node:fs";
 import {ClientSession, MongoClient} from "mongodb";
-import crypto from 'node:crypto';
-import {transpile} from 'typescript';
+import * as crypto from 'node:crypto';
 
 import {AvailableMigration, Configuration, Migration, MigrationStats, MigrationStatus} from "../../types";
 import {parseArguments, transpileInMemory} from "../../utils";
@@ -62,20 +61,20 @@ async function executeDownMigration({mongoClient, dbName, availableMigrations, c
       const availableMigration = availableMigrations.find(migration => migration.name === appliedMigration.name);
       const downChecksum = await getFileChecksum(resolve(availableMigration.location, 'down.ts'));
       const downChecksumDiff = downChecksum !== appliedMigration.downChecksum;
-      const migration = transpileInMemory(resolve(availableMigration.location, 'down.ts'));
+      const {down} = await transpileInMemory(resolve(availableMigration.location, 'down.ts'), resolve(configuration.migrationsFolderPath));
       const replicaSetEnabled = configuration.uri.indexOf('replicaSet') !== -1;
       let session: ClientSession = null;
       if (replicaSetEnabled) {
-        session = await mongoClient.startSession();
+        session = mongoClient.startSession();
       }
       try {
         if (replicaSetEnabled && session) {
           await session.withTransaction(async () => {
-            await migration(mongoClient, session);
+            await down(mongoClient, session);
           });
           await session.commitTransaction();
         } else {
-          await migration(mongoClient);
+          await down(mongoClient);
         }
         migrationStats.push({
           Name: availableMigration.name,
@@ -115,7 +114,9 @@ export default async function down(configuration: Configuration): Promise<void> 
   if (!existsSync(migrationsFolder)) {
     throw new Error(`${configuration.migrationsFolderPath} doesn't exists`);
   }
-  const migrationsAvailable = readdirSync(migrationsFolder);
+  const migrationsAvailable = readdirSync(migrationsFolder).filter(file => {
+    lstatSync(`${migrationsFolder}/${file}`).isDirectory()
+  });
   const migrationsTable = migrationsAvailable.map(migrationName => {
     return {
       [`Migration Name`]: migrationName,

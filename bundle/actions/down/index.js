@@ -1,19 +1,39 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
 const node_path_1 = require("node:path");
 const node_fs_1 = require("node:fs");
 const mongodb_1 = require("mongodb");
-const node_crypto_1 = __importDefault(require("node:crypto"));
+const crypto = __importStar(require("node:crypto"));
 const types_1 = require("../../types");
 const utils_1 = require("../../utils");
 const constants_1 = require("../../constants");
 async function getFileChecksum(path) {
     return new Promise(function (resolve, reject) {
-        const hash = node_crypto_1.default.createHash('md5');
+        const hash = crypto.createHash('md5');
         const input = (0, fs_1.createReadStream)(path);
         input.on('error', reject);
         input.on('data', function (chunk) {
@@ -56,21 +76,21 @@ async function executeDownMigration({ mongoClient, dbName, availableMigrations, 
             const availableMigration = availableMigrations.find(migration => migration.name === appliedMigration.name);
             const downChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'down.ts'));
             const downChecksumDiff = downChecksum !== appliedMigration.downChecksum;
-            const migration = (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'down.ts'));
+            const { down } = await (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'down.ts'), (0, node_path_1.resolve)(configuration.migrationsFolderPath));
             const replicaSetEnabled = configuration.uri.indexOf('replicaSet') !== -1;
             let session = null;
             if (replicaSetEnabled) {
-                session = await mongoClient.startSession();
+                session = mongoClient.startSession();
             }
             try {
                 if (replicaSetEnabled && session) {
                     await session.withTransaction(async () => {
-                        await migration(mongoClient, session);
+                        await down(mongoClient, session);
                     });
                     await session.commitTransaction();
                 }
                 else {
-                    await migration(mongoClient);
+                    await down(mongoClient);
                 }
                 migrationStats.push({
                     Name: availableMigration.name,
@@ -112,7 +132,9 @@ async function down(configuration) {
     if (!(0, node_fs_1.existsSync)(migrationsFolder)) {
         throw new Error(`${configuration.migrationsFolderPath} doesn't exists`);
     }
-    const migrationsAvailable = (0, fs_1.readdirSync)(migrationsFolder);
+    const migrationsAvailable = (0, fs_1.readdirSync)(migrationsFolder).filter(file => {
+        (0, fs_1.lstatSync)(`${migrationsFolder}/${file}`).isDirectory();
+    });
     const migrationsTable = migrationsAvailable.map(migrationName => {
         return {
             [`Migration Name`]: migrationName,

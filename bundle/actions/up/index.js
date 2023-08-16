@@ -58,18 +58,18 @@ async function executeUpMigration({ mongoClient, dbName, availableMigrations, ch
             const replicaSetEnabled = configuration.uri.indexOf('replicaSet') !== -1;
             let session = null;
             if (replicaSetEnabled) {
-                session = await mongoClient.startSession();
+                session = mongoClient.startSession();
             }
             try {
-                const migration = (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'up.ts'));
+                const { up } = await (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'up.ts'), (0, node_path_1.resolve)(configuration.migrationsFolderPath));
                 if (replicaSetEnabled && session) {
                     await session.withTransaction(async () => {
-                        await migration(mongoClient, session);
+                        await up(mongoClient, session);
                     });
                     await session.commitTransaction();
                 }
                 else {
-                    await migration(mongoClient);
+                    await up(mongoClient);
                 }
                 migrationStats.push({
                     Name: availableMigration.name,
@@ -138,7 +138,9 @@ async function up(configuration) {
     if (!(0, node_fs_1.existsSync)(migrationsFolder)) {
         throw new Error(`${configuration.migrationsFolderPath} doesn't exists`);
     }
-    const migrationsAvailable = (0, fs_1.readdirSync)(migrationsFolder);
+    const migrationsAvailable = (0, fs_1.readdirSync)(migrationsFolder).filter(file => {
+        (0, fs_1.lstatSync)(`${migrationsFolder}/${file}`).isDirectory();
+    });
     const migrationsTable = migrationsAvailable.map(migrationName => {
         return {
             [`Migration Name`]: migrationName,

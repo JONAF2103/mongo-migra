@@ -1,4 +1,4 @@
-import {createReadStream, readdirSync, readFileSync} from "fs";
+import {createReadStream, lstatSync, readdirSync, readFileSync} from "fs";
 import {resolve} from "node:path";
 import {existsSync} from "node:fs";
 import {ClientSession, MongoClient} from "mongodb";
@@ -64,17 +64,17 @@ async function executeUpMigration({mongoClient, dbName, availableMigrations, cha
       const replicaSetEnabled = configuration.uri.indexOf('replicaSet') !== -1;
       let session: ClientSession = null;
       if (replicaSetEnabled) {
-        session = await mongoClient.startSession();
+        session = mongoClient.startSession();
       }
       try {
-        const migration = transpileInMemory(resolve(availableMigration.location, 'up.ts'));
+        const {up} = await transpileInMemory(resolve(availableMigration.location, 'up.ts'), resolve(configuration.migrationsFolderPath));
         if (replicaSetEnabled && session) {
           await session.withTransaction(async () => {
-            await migration(mongoClient, session);
+            await up(mongoClient, session);
           });
           await session.commitTransaction();
         } else {
-          await migration(mongoClient);
+          await up(mongoClient);
         }
         migrationStats.push({
           Name: availableMigration.name,
@@ -140,7 +140,9 @@ export default async function up(configuration: Configuration): Promise<void> {
   if (!existsSync(migrationsFolder)) {
     throw new Error(`${configuration.migrationsFolderPath} doesn't exists`);
   }
-  const migrationsAvailable = readdirSync(migrationsFolder);
+  const migrationsAvailable = readdirSync(migrationsFolder).filter(file => {
+    lstatSync(`${migrationsFolder}/${file}`).isDirectory()
+  });
   const migrationsTable = migrationsAvailable.map(migrationName => {
     return {
       [`Migration Name`]: migrationName,

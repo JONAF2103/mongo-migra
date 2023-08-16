@@ -6,7 +6,7 @@ import {DEFAULT_CONFIG} from "./configuration";
 import {Configuration} from "./types";
 import {showHelp} from "./help";
 
-const configurationFileName = 'mongo-migra.ts';
+const CONFIGURATION_DEFAULT_FILE = 'mongo-migra.ts';
 
 export * from './types';
 
@@ -27,13 +27,13 @@ function mergeEnvConfiguration(configuration: Configuration): Configuration {
 async function execute(args: Map<string, string>): Promise<void> {
   const actionName = args.get('action');
   const verbose = args.has('verbose');
-  let configFilePath;
+  let configFilePath: string;
   if (args.has('config')) {
     if (!existsSync(resolve(args.get('config')))) {
       throw new Error(`${resolve(args.get('config'))} doesn't exists`);
     }
-  } else if (existsSync(resolve(configurationFileName))) {
-    configFilePath = resolve(configurationFileName);
+  } else if (existsSync(resolve(CONFIGURATION_DEFAULT_FILE))) {
+    configFilePath = resolve(CONFIGURATION_DEFAULT_FILE);
   }
   try {
     let configuration: Configuration;
@@ -42,7 +42,7 @@ async function execute(args: Map<string, string>): Promise<void> {
       if (verbose) {
         console.log(`Using configuration file ${configFile}`);
       }
-      configuration = transpileInMemory(configFile);
+      configuration = (await transpileInMemory(configFile)).default;
     } else {
       if (verbose) {
         console.log('Using default configuration...');
@@ -55,7 +55,7 @@ async function execute(args: Map<string, string>): Promise<void> {
     }
     await (await import((`./actions/${actionName}`))).default(configuration);
   } catch (error) {
-    if (error.code === 'MODULE_NOT_FOUND') {
+    if (error?.code === 'MODULE_NOT_FOUND') {
       throw new Error(`Invalid action name ${actionName}`);
     }
     throw error;
