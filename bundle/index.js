@@ -46,10 +46,20 @@ function mergeEnvConfiguration(configuration) {
     }
     return configuration;
 }
+function muteConsole() {
+    Object.keys(console).forEach(key => {
+        console[key] = function () { };
+    });
+}
 async function execute(args) {
     var _a;
     const actionName = args.get('action');
     const verbose = args.has('verbose');
+    const silent = args.has('silent');
+    if (silent && actionName !== 'status') {
+        console.log('Executing on silent mode...');
+        muteConsole();
+    }
     let configFilePath;
     if (args.has('config')) {
         if (!(0, node_fs_1.existsSync)((0, node_path_1.resolve)(args.get('config')))) {
