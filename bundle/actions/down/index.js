@@ -132,9 +132,7 @@ async function down(configuration) {
     if (!(0, node_fs_1.existsSync)(migrationsFolder)) {
         throw new Error(`${configuration.migrationsFolderPath} doesn't exists`);
     }
-    const migrationsAvailable = (0, fs_1.readdirSync)(migrationsFolder).filter(file => {
-        (0, fs_1.lstatSync)(`${migrationsFolder}/${file}`).isDirectory();
-    });
+    const migrationsAvailable = (0, fs_1.readdirSync)(migrationsFolder).filter(file => (0, fs_1.lstatSync)(`${migrationsFolder}/${file}`).isDirectory());
     const migrationsTable = migrationsAvailable.map(migrationName => {
         return {
             [`Migration Name`]: migrationName,
