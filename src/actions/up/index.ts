@@ -140,9 +140,7 @@ export default async function up(configuration: Configuration): Promise<void> {
   if (!existsSync(migrationsFolder)) {
     throw new Error(`${configuration.migrationsFolderPath} doesn't exists`);
   }
-  const migrationsAvailable = readdirSync(migrationsFolder).filter(file => {
-    lstatSync(`${migrationsFolder}/${file}`).isDirectory()
-  });
+  const migrationsAvailable = readdirSync(migrationsFolder).filter(file => lstatSync(`${migrationsFolder}/${file}`).isDirectory());
   const migrationsTable = migrationsAvailable.map(migrationName => {
     return {
       [`Migration Name`]: migrationName,
