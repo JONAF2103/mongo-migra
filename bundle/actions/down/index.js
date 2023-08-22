@@ -45,7 +45,7 @@ async function getFileChecksum(path) {
     });
 }
 async function executeDownMigration({ mongoClient, dbName, availableMigrations, changeLogCollectionName, numberOfMigrations, configuration }) {
-    const db = await mongoClient.db(dbName);
+    const db = mongoClient.db(dbName);
     const changelogCollection = db.collection(changeLogCollectionName);
     const migrationsOnDatabase = changelogCollection.find();
     const appliedMigrations = [];
@@ -76,7 +76,7 @@ async function executeDownMigration({ mongoClient, dbName, availableMigrations, 
             const availableMigration = availableMigrations.find(migration => migration.name === appliedMigration.name);
             const downChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'down.ts'));
             const downChecksumDiff = downChecksum !== appliedMigration.downChecksum;
-            const { down } = await (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'down.ts'), (0, node_path_1.resolve)(configuration.migrationsFolderPath));
+            const { down, post } = await (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'down.ts'), (0, node_path_1.resolve)(configuration.migrationsFolderPath));
             const replicaSetEnabled = configuration.uri.indexOf('replicaSet') !== -1;
             let session = null;
             if (replicaSetEnabled) {
@@ -101,6 +101,9 @@ async function executeDownMigration({ mongoClient, dbName, availableMigrations, 
                 await changelogCollection.deleteOne({
                     _id: appliedMigration._id,
                 });
+                if (post) {
+                    await post(mongoClient, db);
+                }
             }
             catch (error) {
                 await changelogCollection.updateOne({ _id: appliedMigration._id }, {
@@ -155,7 +158,7 @@ async function down(configuration) {
             dbName: configuration.dbName,
             changeLogCollectionName: configuration.changeLogCollectionName,
             availableMigrations,
-            numberOfMigrations: args.has('amoount') ? parseInt(args.get('amount')) : 1,
+            numberOfMigrations: args.has('amount') ? parseInt(args.get('amount')) : 1,
             configuration,
         });
     }
@@ -171,7 +174,7 @@ async function down(configuration) {
                 dbName: db.name,
                 changeLogCollectionName: configuration.changeLogCollectionName,
                 availableMigrations,
-                numberOfMigrations: args.has('amoount') ? parseInt(args.get('amount')) : 1,
+                numberOfMigrations: args.has('amount') ? parseInt(args.get('amount')) : 1,
                 configuration,
             });
         }
