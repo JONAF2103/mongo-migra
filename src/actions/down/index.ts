@@ -32,7 +32,7 @@ async function getFileChecksum(path: string): Promise<string> {
 }
 
 async function executeDownMigration({mongoClient, dbName, availableMigrations, changeLogCollectionName, numberOfMigrations, configuration}: DownMigrationProps): Promise<void> {
-  const db = await mongoClient.db(dbName);
+  const db = mongoClient.db(dbName);
   const changelogCollection = db.collection<Migration>(changeLogCollectionName);
   const migrationsOnDatabase = changelogCollection.find();
   const appliedMigrations: Migration[] = [];
@@ -61,7 +61,7 @@ async function executeDownMigration({mongoClient, dbName, availableMigrations, c
       const availableMigration = availableMigrations.find(migration => migration.name === appliedMigration.name);
       const downChecksum = await getFileChecksum(resolve(availableMigration.location, 'down.ts'));
       const downChecksumDiff = downChecksum !== appliedMigration.downChecksum;
-      const {down} = await transpileInMemory(resolve(availableMigration.location, 'down.ts'), resolve(configuration.migrationsFolderPath));
+      const {down, post} = await transpileInMemory(resolve(availableMigration.location, 'down.ts'), resolve(configuration.migrationsFolderPath));
       const replicaSetEnabled = configuration.uri.indexOf('replicaSet') !== -1;
       let session: ClientSession = null;
       if (replicaSetEnabled) {
@@ -85,6 +85,9 @@ async function executeDownMigration({mongoClient, dbName, availableMigrations, c
         await changelogCollection.deleteOne({
           _id: appliedMigration._id,
         });
+        if (post) {
+          await post(mongoClient, db);
+        }
       } catch (error) {
         await changelogCollection.updateOne({_id: appliedMigration._id}, {
           $set: {
@@ -137,7 +140,7 @@ export default async function down(configuration: Configuration): Promise<void> 
       dbName: configuration.dbName,
       changeLogCollectionName: configuration.changeLogCollectionName,
       availableMigrations,
-      numberOfMigrations: args.has('amoount') ? parseInt(args.get('amount')) : 1,
+      numberOfMigrations: args.has('amount') ? parseInt(args.get('amount')) : 1,
       configuration,
     });
   } else {
@@ -152,7 +155,7 @@ export default async function down(configuration: Configuration): Promise<void> 
         dbName: db.name,
         changeLogCollectionName: configuration.changeLogCollectionName,
         availableMigrations,
-        numberOfMigrations: args.has('amoount') ? parseInt(args.get('amount')) : 1,
+        numberOfMigrations: args.has('amount') ? parseInt(args.get('amount')) : 1,
         configuration,
       });
     }

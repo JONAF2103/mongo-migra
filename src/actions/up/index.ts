@@ -32,7 +32,7 @@ async function getFileChecksum(path: string): Promise<string> {
 }
 
 async function executeUpMigration({mongoClient, dbName, availableMigrations, changeLogCollectionName, configuration}: UpMigrationProps): Promise<void> {
-  const db = await mongoClient.db(dbName);
+  const db = mongoClient.db(dbName);
   const changelogCollection = db.collection<Migration>(changeLogCollectionName);
   const migrationsOnDatabase = changelogCollection.find();
   const appliedMigrations: Migration[] = [];
@@ -67,7 +67,7 @@ async function executeUpMigration({mongoClient, dbName, availableMigrations, cha
         session = mongoClient.startSession();
       }
       try {
-        const {up} = await transpileInMemory(resolve(availableMigration.location, 'up.ts'), resolve(configuration.migrationsFolderPath));
+        const {up, post} = await transpileInMemory(resolve(availableMigration.location, 'up.ts'), resolve(configuration.migrationsFolderPath));
         if (replicaSetEnabled && session) {
           await session.withTransaction(async () => {
             await up(mongoClient, db, session);
@@ -91,6 +91,9 @@ async function executeUpMigration({mongoClient, dbName, availableMigrations, cha
               status: MigrationStatus.Applied,
             }
           });
+          if (post) {
+            await post(mongoClient, db);
+          }
         } else {
           await changelogCollection.insertOne({
             _id: null,
