@@ -59,9 +59,9 @@ async function executeDownMigration({mongoClient, dbName, availableMigrations, c
     if (migrationsDownAmount < numberOfMigrations) {
       console.log(`Down migration ${appliedMigration.name}...`);
       const availableMigration = availableMigrations.find(migration => migration.name === appliedMigration.name);
-      const downChecksum = await getFileChecksum(resolve(availableMigration.location, 'down.ts'));
+      const downChecksum = await getFileChecksum(resolve(availableMigration.location, 'down.ts').replace(/\s/g, '\\ '));
       const downChecksumDiff = downChecksum !== appliedMigration.downChecksum;
-      const {down, post} = await transpileInMemory(resolve(availableMigration.location, 'down.ts'), resolve(configuration.migrationsFolderPath));
+      const {down, post} = await transpileInMemory(resolve(availableMigration.location, 'down.ts').replace(/\s/g, '\\ '), resolve(configuration.migrationsFolderPath).replace(/\s/g, '\\ '));
       const replicaSetEnabled = configuration.uri.indexOf('replicaSet') !== -1;
       let session: ClientSession = null;
       if (replicaSetEnabled) {
@@ -113,7 +113,7 @@ async function executeDownMigration({mongoClient, dbName, availableMigrations, c
 
 export default async function down(configuration: Configuration): Promise<void> {
   const args = parseArguments();
-  const migrationsFolder = resolve(configuration.migrationsFolderPath);
+  const migrationsFolder = resolve(configuration.migrationsFolderPath).replace(/\s/g, '\\ ');
   if (!existsSync(migrationsFolder)) {
     throw new Error(`${configuration.migrationsFolderPath} doesn't exists`);
   }

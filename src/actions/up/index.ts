@@ -45,8 +45,8 @@ async function executeUpMigration({mongoClient, dbName, availableMigrations, cha
   }
   const migrationStats: MigrationStats[] = [];
   for (const availableMigration of availableMigrations) {
-    const upChecksum = await getFileChecksum(resolve(availableMigration.location, 'up.ts'));
-    const downChecksum = await getFileChecksum(resolve(availableMigration.location, 'down.ts'));
+    const upChecksum = await getFileChecksum(resolve(availableMigration.location, 'up.ts').replace(/\s/g, '\\ '));
+    const downChecksum = await getFileChecksum(resolve(availableMigration.location, 'down.ts').replace(/\s/g, '\\ '));
     const appliedMigration = appliedMigrations.find(migration => migration.name === availableMigration.name);
     if (appliedMigration && appliedMigration.status === MigrationStatus.Applied) {
       console.log(`Skipping already applied migration ${appliedMigration.name}...`);
@@ -67,7 +67,7 @@ async function executeUpMigration({mongoClient, dbName, availableMigrations, cha
         session = mongoClient.startSession();
       }
       try {
-        const {up, post} = await transpileInMemory(resolve(availableMigration.location, 'up.ts'), resolve(configuration.migrationsFolderPath));
+        const {up, post} = await transpileInMemory(resolve(availableMigration.location, 'up.ts').replace(/\s/g, '\\ '), resolve(configuration.migrationsFolderPath).replace(/\s/g, '\\ '));
         if (replicaSetEnabled && session) {
           await session.withTransaction(async () => {
             await up(mongoClient, db, session);
@@ -139,7 +139,7 @@ async function executeUpMigration({mongoClient, dbName, availableMigrations, cha
 }
 
 export default async function up(configuration: Configuration): Promise<void> {
-  const migrationsFolder = resolve(configuration.migrationsFolderPath);
+  const migrationsFolder = resolve(configuration.migrationsFolderPath).replace(/\s/g, '\\ ');
   if (!existsSync(migrationsFolder)) {
     throw new Error(`${configuration.migrationsFolderPath} doesn't exists`);
   }
