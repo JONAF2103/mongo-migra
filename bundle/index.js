@@ -62,17 +62,17 @@ async function execute(args) {
     }
     let configFilePath;
     if (args.has('config')) {
-        if (!(0, node_fs_1.existsSync)((0, node_path_1.resolve)(args.get('config')))) {
-            throw new Error(`${(0, node_path_1.resolve)(args.get('config'))} doesn't exists`);
+        if (!(0, node_fs_1.existsSync)((0, node_path_1.resolve)(args.get('config')).replace(/\s/g, '\\ '))) {
+            throw new Error(`${(0, node_path_1.resolve)(args.get('config')).replace(/\s/g, '\\ ')} doesn't exists`);
         }
     }
-    else if ((0, node_fs_1.existsSync)((0, node_path_1.resolve)(CONFIGURATION_DEFAULT_FILE))) {
-        configFilePath = (0, node_path_1.resolve)(CONFIGURATION_DEFAULT_FILE);
+    else if ((0, node_fs_1.existsSync)((0, node_path_1.resolve)(CONFIGURATION_DEFAULT_FILE).replace(/\s/g, '\\ '))) {
+        configFilePath = (0, node_path_1.resolve)(CONFIGURATION_DEFAULT_FILE).replace(/\s/g, '\\ ');
     }
     try {
         let configuration;
         if ((0, node_fs_1.existsSync)(configFilePath)) {
-            const configFile = (0, node_path_1.resolve)(configFilePath);
+            const configFile = (0, node_path_1.resolve)(configFilePath).replace(/\s/g, '\\ ');
             if (verbose) {
                 console.log(`Using configuration file ${configFile}`);
             }

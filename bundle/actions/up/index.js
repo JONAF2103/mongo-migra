@@ -38,8 +38,8 @@ async function executeUpMigration({ mongoClient, dbName, availableMigrations, ch
     }
     const migrationStats = [];
     for (const availableMigration of availableMigrations) {
-        const upChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'up.ts'));
-        const downChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'down.ts'));
+        const upChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'up.ts').replace(/\s/g, '\\ '));
+        const downChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'down.ts').replace(/\s/g, '\\ '));
         const appliedMigration = appliedMigrations.find(migration => migration.name === availableMigration.name);
         if (appliedMigration && appliedMigration.status === types_1.MigrationStatus.Applied) {
             console.log(`Skipping already applied migration ${appliedMigration.name}...`);
@@ -61,7 +61,7 @@ async function executeUpMigration({ mongoClient, dbName, availableMigrations, ch
                 session = mongoClient.startSession();
             }
             try {
-                const { up, post } = await (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'up.ts'), (0, node_path_1.resolve)(configuration.migrationsFolderPath));
+                const { up, post } = await (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'up.ts').replace(/\s/g, '\\ '), (0, node_path_1.resolve)(configuration.migrationsFolderPath).replace(/\s/g, '\\ '));
                 if (replicaSetEnabled && session) {
                     await session.withTransaction(async () => {
                         await up(mongoClient, db, session);
@@ -137,7 +137,7 @@ async function executeUpMigration({ mongoClient, dbName, availableMigrations, ch
     console.table(migrationStats);
 }
 async function up(configuration) {
-    const migrationsFolder = (0, node_path_1.resolve)(configuration.migrationsFolderPath);
+    const migrationsFolder = (0, node_path_1.resolve)(configuration.migrationsFolderPath).replace(/\s/g, '\\ ');
     if (!(0, node_fs_1.existsSync)(migrationsFolder)) {
         throw new Error(`${configuration.migrationsFolderPath} doesn't exists`);
     }

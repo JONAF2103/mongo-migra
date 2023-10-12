@@ -69,10 +69,10 @@ async function executeCommand(command, environment = {}) {
 async function transpileInMemory(file, folder) {
     try {
         if (folder) {
-            await executeCommand(`tsc ${(0, node_path_1.resolve)(folder)}/**/**.ts`);
+            await executeCommand(`tsc ${(0, node_path_1.resolve)(folder).replace(/\s/g, '\\ ')}/**/**.ts`);
         }
         else {
-            await executeCommand(`tsc ${(0, node_path_1.resolve)(file)}`);
+            await executeCommand(`tsc ${(0, node_path_1.resolve)(file).replace(/\s/g, '\\ ')}`);
         }
     }
     catch (ignored) { }
