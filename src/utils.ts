@@ -42,9 +42,9 @@ async function executeCommand(command: string, environment: unknown = {}): Promi
 export async function transpileInMemory<T = any>(file: string, folder?: string): Promise<T> {
   try {
     if (folder) {
-      await executeCommand(`tsc ${folder}/**/**.ts`);
+      await executeCommand(`tsc ${resolve(folder)}/**/**.ts`);
     } else {
-      await executeCommand(`tsc ${file}`);
+      await executeCommand(`tsc ${resolve(file)}`);
     }
   } catch (ignored) {}
   let transpiledFile: string = file.replace('.ts', '.js');
