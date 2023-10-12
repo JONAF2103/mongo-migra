@@ -25,6 +25,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.transpileInMemory = exports.parseArguments = void 0;
+const node_path_1 = require("node:path");
 const child_process_1 = require("child_process");
 const fs_1 = require("fs");
 function parseArguments(requiredParameters = [], argvIndex = 2) {
@@ -68,10 +69,10 @@ async function executeCommand(command, environment = {}) {
 async function transpileInMemory(file, folder) {
     try {
         if (folder) {
-            await executeCommand(`tsc ${folder}/**/**.ts`);
+            await executeCommand(`tsc ${(0, node_path_1.resolve)(folder)}/**/**.ts`);
         }
         else {
-            await executeCommand(`tsc ${file}`);
+            await executeCommand(`tsc ${(0, node_path_1.resolve)(file)}`);
         }
     }
     catch (ignored) { }
