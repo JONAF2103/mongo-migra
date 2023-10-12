@@ -40,16 +40,16 @@ async function execute(args: Map<string, string>): Promise<void> {
   }
   let configFilePath: string;
   if (args.has('config')) {
-    if (!existsSync(resolve(args.get('config')).replace(/\s/g, '\\ '))) {
-      throw new Error(`${resolve(args.get('config')).replace(/\s/g, '\\ ')} doesn't exists`);
+    if (!existsSync(resolve(args.get('config')))) {
+      throw new Error(`${resolve(args.get('config'))} doesn't exists`);
     }
-  } else if (existsSync(resolve(CONFIGURATION_DEFAULT_FILE).replace(/\s/g, '\\ '))) {
-    configFilePath = resolve(CONFIGURATION_DEFAULT_FILE).replace(/\s/g, '\\ ');
+  } else if (existsSync(resolve(CONFIGURATION_DEFAULT_FILE))) {
+    configFilePath = resolve(CONFIGURATION_DEFAULT_FILE);
   }
   try {
     let configuration: Configuration;
     if (existsSync(configFilePath)) {
-      const configFile = resolve(configFilePath).replace(/\s/g, '\\ ');
+      const configFile = resolve(configFilePath);
       if (verbose) {
         console.log(`Using configuration file ${configFile}`);
       }

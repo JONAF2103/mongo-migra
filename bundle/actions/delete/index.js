@@ -8,8 +8,8 @@ async function deleteMigration(configuration) {
     const args = (0, utils_1.parseArguments)(['name']);
     const name = args.get('name');
     console.log(`Deleting migration folder ${configuration.migrationsFolderPath}/${name}...`);
-    if ((0, node_fs_1.existsSync)((0, node_path_1.resolve)(configuration.migrationsFolderPath, name).replace(/\s/g, '\\ '))) {
-        (0, fs_1.rmSync)((0, node_path_1.resolve)(configuration.migrationsFolderPath, name).replace(/\s/g, '\\ '), { recursive: true });
+    if ((0, node_fs_1.existsSync)((0, node_path_1.resolve)(configuration.migrationsFolderPath, name))) {
+        (0, fs_1.rmSync)((0, node_path_1.resolve)(configuration.migrationsFolderPath, name), { recursive: true });
         console.log(`Migration ${name} deleted successfully!`);
     }
     else {

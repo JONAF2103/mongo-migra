@@ -38,8 +38,8 @@ async function executeUpMigration({ mongoClient, dbName, availableMigrations, ch
     }
     const migrationStats = [];
     for (const availableMigration of availableMigrations) {
-        const upChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'up.ts').replace(/\s/g, '\\ '));
-        const downChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'down.ts').replace(/\s/g, '\\ '));
+        const upChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'up.ts'));
+        const downChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'down.ts'));
         const appliedMigration = appliedMigrations.find(migration => migration.name === availableMigration.name);
         if (appliedMigration && appliedMigration.status === types_1.MigrationStatus.Applied) {
             console.log(`Skipping already applied migration ${appliedMigration.name}...`);
@@ -137,7 +137,7 @@ async function executeUpMigration({ mongoClient, dbName, availableMigrations, ch
     console.table(migrationStats);
 }
 async function up(configuration) {
-    const migrationsFolder = (0, node_path_1.resolve)(configuration.migrationsFolderPath).replace(/\s/g, '\\ ');
+    const migrationsFolder = (0, node_path_1.resolve)(configuration.migrationsFolderPath);
     if (!(0, node_fs_1.existsSync)(migrationsFolder)) {
         throw new Error(`${configuration.migrationsFolderPath} doesn't exists`);
     }

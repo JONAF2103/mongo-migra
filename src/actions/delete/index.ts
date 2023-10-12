@@ -8,8 +8,8 @@ export default async function deleteMigration(configuration: Configuration): Pro
   const args = parseArguments(['name']);
   const name = args.get('name');
   console.log(`Deleting migration folder ${configuration.migrationsFolderPath}/${name}...`);
-  if (existsSync(resolve(configuration.migrationsFolderPath, name).replace(/\s/g, '\\ '))) {
-    rmSync(resolve(configuration.migrationsFolderPath, name).replace(/\s/g, '\\ '), {recursive: true});
+  if (existsSync(resolve(configuration.migrationsFolderPath, name))) {
+    rmSync(resolve(configuration.migrationsFolderPath, name), {recursive: true});
     console.log(`Migration ${name} deleted successfully!`);
   } else {
     throw new Error(`Migration ${name} doesn't exists`);

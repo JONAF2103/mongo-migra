@@ -45,8 +45,8 @@ async function executeUpMigration({mongoClient, dbName, availableMigrations, cha
   }
   const migrationStats: MigrationStats[] = [];
   for (const availableMigration of availableMigrations) {
-    const upChecksum = await getFileChecksum(resolve(availableMigration.location, 'up.ts').replace(/\s/g, '\\ '));
-    const downChecksum = await getFileChecksum(resolve(availableMigration.location, 'down.ts').replace(/\s/g, '\\ '));
+    const upChecksum = await getFileChecksum(resolve(availableMigration.location, 'up.ts'));
+    const downChecksum = await getFileChecksum(resolve(availableMigration.location, 'down.ts'));
     const appliedMigration = appliedMigrations.find(migration => migration.name === availableMigration.name);
     if (appliedMigration && appliedMigration.status === MigrationStatus.Applied) {
       console.log(`Skipping already applied migration ${appliedMigration.name}...`);
@@ -139,7 +139,7 @@ async function executeUpMigration({mongoClient, dbName, availableMigrations, cha
 }
 
 export default async function up(configuration: Configuration): Promise<void> {
-  const migrationsFolder = resolve(configuration.migrationsFolderPath).replace(/\s/g, '\\ ');
+  const migrationsFolder = resolve(configuration.migrationsFolderPath);
   if (!existsSync(migrationsFolder)) {
     throw new Error(`${configuration.migrationsFolderPath} doesn't exists`);
   }
