@@ -61,15 +61,21 @@ async function executeUpMigration({ mongoClient, dbName, availableMigrations, ch
                 session = mongoClient.startSession();
             }
             try {
-                const { up, post } = await (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'up.ts').replace(/\s/g, '\\ '), (0, node_path_1.resolve)(configuration.migrationsFolderPath).replace(/\s/g, '\\ '));
+                const { up, post, validate } = await (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'up.ts').replace(/\s/g, '\\ '), (0, node_path_1.resolve)(configuration.migrationsFolderPath).replace(/\s/g, '\\ '));
                 if (replicaSetEnabled && session) {
                     await session.withTransaction(async () => {
                         await up(mongoClient, db, session);
+                        if (validate) {
+                            await validate(mongoClient, db, session);
+                        }
                     });
                     await session.commitTransaction();
                 }
                 else {
                     await up(mongoClient, db);
+                    if (validate) {
+                        await validate(mongoClient, db);
+                    }
                 }
                 migrationStats.push({
                     Name: availableMigration.name,

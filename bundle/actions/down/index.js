@@ -76,7 +76,7 @@ async function executeDownMigration({ mongoClient, dbName, availableMigrations, 
             const availableMigration = availableMigrations.find(migration => migration.name === appliedMigration.name);
             const downChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'down.ts'));
             const downChecksumDiff = downChecksum !== appliedMigration.downChecksum;
-            const { down, post } = await (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'down.ts'), (0, node_path_1.resolve)(configuration.migrationsFolderPath));
+            const { down, post, validate } = await (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'down.ts'), (0, node_path_1.resolve)(configuration.migrationsFolderPath));
             const replicaSetEnabled = configuration.uri.indexOf('replicaSet') !== -1;
             let session = null;
             if (replicaSetEnabled) {
@@ -86,11 +86,17 @@ async function executeDownMigration({ mongoClient, dbName, availableMigrations, 
                 if (replicaSetEnabled && session) {
                     await session.withTransaction(async () => {
                         await down(mongoClient, db, session);
+                        if (validate) {
+                            await validate(mongoClient, db, session);
+                        }
                     });
                     await session.commitTransaction();
                 }
                 else {
                     await down(mongoClient, db);
+                    if (validate) {
+                        await validate(mongoClient, db);
+                    }
                 }
                 migrationStats.push({
                     Name: availableMigration.name,
