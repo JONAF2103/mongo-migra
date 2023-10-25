@@ -3,10 +3,8 @@ import {resolve} from "node:path";
 import {existsSync} from "node:fs";
 import {ClientSession, MongoClient} from "mongodb";
 import crypto from 'node:crypto';
-import {ModuleKind, transpile} from 'typescript';
 
 import {AvailableMigration, Configuration, Migration, MigrationStats, MigrationStatus} from "../../types";
-import {transpileInMemory} from "../../utils";
 import {ADMIN_DBS} from "../../constants";
 
 interface UpMigrationProps {
@@ -45,8 +43,8 @@ async function executeUpMigration({mongoClient, dbName, availableMigrations, cha
   }
   const migrationStats: MigrationStats[] = [];
   for (const availableMigration of availableMigrations) {
-    const upChecksum = await getFileChecksum(resolve(availableMigration.location, 'up.ts'));
-    const downChecksum = await getFileChecksum(resolve(availableMigration.location, 'down.ts'));
+    const upChecksum = await getFileChecksum(resolve(availableMigration.location, 'up.js'));
+    const downChecksum = await getFileChecksum(resolve(availableMigration.location, 'down.js'));
     const appliedMigration = appliedMigrations.find(migration => migration.name === availableMigration.name);
     if (appliedMigration && appliedMigration.status === MigrationStatus.Applied) {
       console.log(`Skipping already applied migration ${appliedMigration.name}...`);
@@ -60,14 +58,18 @@ async function executeUpMigration({mongoClient, dbName, availableMigrations, cha
         DOWN: false,
       });
     } else {
-      console.log(`Executing migration ${availableMigration.name} on db ${dbName}...`);
+      if (appliedMigration) {
+        console.log(`Re-executing failed migration ${availableMigration.name} on db ${dbName}...`);
+      } else {
+        console.log(`Executing migration ${availableMigration.name} on db ${dbName}...`);
+      }
       const replicaSetEnabled = configuration.uri.indexOf('replicaSet') !== -1;
       let session: ClientSession = null;
       if (replicaSetEnabled) {
         session = mongoClient.startSession();
       }
       try {
-        const {up, post, validate} = await transpileInMemory(resolve(availableMigration.location, 'up.ts').replace(/\s/g, '\\ '), resolve(configuration.migrationsFolderPath).replace(/\s/g, '\\ '));
+        const {up, post, validate} = await import(resolve(availableMigration.location, 'up.js'));
         if (replicaSetEnabled && session) {
           await session.withTransaction(async () => {
             await up(mongoClient, db, session);
@@ -95,6 +97,9 @@ async function executeUpMigration({mongoClient, dbName, availableMigrations, cha
               upChecksum,
               date: new Date().toISOString(),
               status: MigrationStatus.Applied,
+            },
+            $unset: {
+              errorMessage: 1,
             }
           });
           if (post) {
@@ -159,7 +164,7 @@ export default async function up(configuration: Configuration): Promise<void> {
   const availableMigrations: AvailableMigration[] = migrationsAvailable.map(name => {
     return {
       name,
-      location: `${migrationsFolder}/${name}`
+      location: `${migrationsFolder}/${name}`.replace(/\s/g, '\\ ')
     };
   });
   console.log('Checking available migrations:');

@@ -22,7 +22,7 @@ Once installed you can execute the command as a terminal command.
 
 Command Syntax: 
 ```
-mongo-migra config=<optional> action=<create/delete/init/status/up/down> <parameters:name=value>
+mongo-migra config=<optional> action=<create/delete/init/status/up/down/compile> <parameters:name=value>
 ```
 
 Here are a list of available commands:
@@ -33,6 +33,7 @@ Here are a list of available commands:
 * `mongo-migra action=up`: executes an up operation to migrate up all the pending migrations.
 * `mongo-migra action=status`: shows the migrations status on the db.
 * `mongo-migra action=init`: generates the initial configuration in order to use this program.
+* `mongo-migra action=compile`: transpiles the typescript code into javascript to be available when you execute other actions like up.
 * In all the commands the param `config` can be set with a custom file path in order to load a different configuration.
 * You have an optional parameter `verbose` to output the configuration used by the migrator.
 

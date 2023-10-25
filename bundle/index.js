@@ -26,12 +26,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CONFIGURATION_DEFAULT_FILE = void 0;
 const node_path_1 = require("node:path");
 const node_fs_1 = require("node:fs");
 const utils_1 = require("./utils");
 const configuration_1 = require("./configuration");
 const help_1 = require("./help");
-const CONFIGURATION_DEFAULT_FILE = 'mongo-migra.ts';
+exports.CONFIGURATION_DEFAULT_FILE = 'mongo-migra.js';
 __exportStar(require("./types"), exports);
 function mergeEnvConfiguration(configuration) {
     if (!configuration.env) {
@@ -52,8 +53,11 @@ function muteConsole() {
     });
 }
 async function execute(args) {
-    var _a;
+    var _a, _b, _c;
     const actionName = args.get('action');
+    if (actionName === 'compile') {
+        return await (await (_a = (`./actions/${actionName}`), Promise.resolve().then(() => __importStar(require(_a))))).default(args);
+    }
     const verbose = args.has('verbose');
     const silent = args.has('silent');
     if (silent && actionName !== 'status') {
@@ -66,36 +70,28 @@ async function execute(args) {
             throw new Error(`${(0, node_path_1.resolve)(args.get('config'))} doesn't exists`);
         }
     }
-    else if ((0, node_fs_1.existsSync)((0, node_path_1.resolve)(CONFIGURATION_DEFAULT_FILE))) {
-        configFilePath = (0, node_path_1.resolve)(CONFIGURATION_DEFAULT_FILE);
+    else if ((0, node_fs_1.existsSync)((0, node_path_1.resolve)(exports.CONFIGURATION_DEFAULT_FILE))) {
+        configFilePath = (0, node_path_1.resolve)(exports.CONFIGURATION_DEFAULT_FILE);
     }
-    try {
-        let configuration;
-        if ((0, node_fs_1.existsSync)(configFilePath)) {
-            const configFile = (0, node_path_1.resolve)(configFilePath);
-            if (verbose) {
-                console.log(`Using configuration file ${configFile}`);
-            }
-            configuration = (await (0, utils_1.transpileInMemory)(configFile)).default;
-        }
-        else {
-            if (verbose) {
-                console.log('Using default configuration...');
-            }
-            configuration = configuration_1.DEFAULT_CONFIG;
-        }
-        configuration = mergeEnvConfiguration(configuration);
+    let configuration;
+    if ((0, node_fs_1.existsSync)(configFilePath)) {
+        const configFile = (0, node_path_1.resolve)(configFilePath);
         if (verbose) {
-            console.log('Configuration value', configuration);
+            console.log(`Using configuration file ${configFile}`);
         }
-        await (await (_a = (`./actions/${actionName}`), Promise.resolve().then(() => __importStar(require(_a))))).default(configuration);
+        configuration = (await (_b = configFile.replace(/\s/g, '\\ '), Promise.resolve().then(() => __importStar(require(_b))))).default;
     }
-    catch (error) {
-        if (error?.code === 'MODULE_NOT_FOUND') {
-            throw new Error(`Invalid action name ${actionName}`);
+    else {
+        if (verbose) {
+            console.log('Using default configuration...');
         }
-        throw error;
+        configuration = configuration_1.DEFAULT_CONFIG;
     }
+    configuration = mergeEnvConfiguration(configuration);
+    if (verbose) {
+        console.log('Configuration value', configuration);
+    }
+    await (await (_c = (`./actions/${actionName}`), Promise.resolve().then(() => __importStar(require(_c))))).default(configuration);
 }
 if (process.argv.slice(2)[0] === '--help' || process.argv.slice(2)[0] === '-h') {
     (0, help_1.showHelp)();

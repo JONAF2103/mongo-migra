@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -9,7 +32,6 @@ const node_fs_1 = require("node:fs");
 const mongodb_1 = require("mongodb");
 const node_crypto_1 = __importDefault(require("node:crypto"));
 const types_1 = require("../../types");
-const utils_1 = require("../../utils");
 const constants_1 = require("../../constants");
 async function getFileChecksum(path) {
     return new Promise(function (resolve, reject) {
@@ -25,6 +47,7 @@ async function getFileChecksum(path) {
     });
 }
 async function executeUpMigration({ mongoClient, dbName, availableMigrations, changeLogCollectionName, configuration }) {
+    var _a;
     const db = mongoClient.db(dbName);
     const changelogCollection = db.collection(changeLogCollectionName);
     const migrationsOnDatabase = changelogCollection.find();
@@ -38,8 +61,8 @@ async function executeUpMigration({ mongoClient, dbName, availableMigrations, ch
     }
     const migrationStats = [];
     for (const availableMigration of availableMigrations) {
-        const upChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'up.ts'));
-        const downChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'down.ts'));
+        const upChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'up.js'));
+        const downChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'down.js'));
         const appliedMigration = appliedMigrations.find(migration => migration.name === availableMigration.name);
         if (appliedMigration && appliedMigration.status === types_1.MigrationStatus.Applied) {
             console.log(`Skipping already applied migration ${appliedMigration.name}...`);
@@ -54,14 +77,19 @@ async function executeUpMigration({ mongoClient, dbName, availableMigrations, ch
             });
         }
         else {
-            console.log(`Executing migration ${availableMigration.name} on db ${dbName}...`);
+            if (appliedMigration) {
+                console.log(`Re-executing failed migration ${availableMigration.name} on db ${dbName}...`);
+            }
+            else {
+                console.log(`Executing migration ${availableMigration.name} on db ${dbName}...`);
+            }
             const replicaSetEnabled = configuration.uri.indexOf('replicaSet') !== -1;
             let session = null;
             if (replicaSetEnabled) {
                 session = mongoClient.startSession();
             }
             try {
-                const { up, post, validate } = await (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'up.ts').replace(/\s/g, '\\ '), (0, node_path_1.resolve)(configuration.migrationsFolderPath).replace(/\s/g, '\\ '));
+                const { up, post, validate } = await (_a = (0, node_path_1.resolve)(availableMigration.location, 'up.js'), Promise.resolve().then(() => __importStar(require(_a))));
                 if (replicaSetEnabled && session) {
                     await session.withTransaction(async () => {
                         await up(mongoClient, db, session);
@@ -90,6 +118,9 @@ async function executeUpMigration({ mongoClient, dbName, availableMigrations, ch
                             upChecksum,
                             date: new Date().toISOString(),
                             status: types_1.MigrationStatus.Applied,
+                        },
+                        $unset: {
+                            errorMessage: 1,
                         }
                     });
                     if (post) {
@@ -157,7 +188,7 @@ async function up(configuration) {
     const availableMigrations = migrationsAvailable.map(name => {
         return {
             name,
-            location: `${migrationsFolder}/${name}`
+            location: `${migrationsFolder}/${name}`.replace(/\s/g, '\\ ')
         };
     });
     console.log('Checking available migrations:');

@@ -39,31 +39,18 @@ async function executeCommand(command: string, environment: unknown = {}): Promi
   });
 }
 
-export async function transpileInMemory<T = any>(file: string, folder?: string): Promise<T> {
-  try {
-    if (folder) {
-      await executeCommand(`tsc ${resolve(folder).replace(/\s/g, '\\ ')}/**/**.ts`);
-    } else {
-      await executeCommand(`tsc ${resolve(file).replace(/\s/g, '\\ ')}`);
+export async function transpileFiles(file: string, folder?: string): Promise<void> {
+    try {
+      if (folder) {
+        await executeCommand(`tsc ${resolve(folder).replace(/\s/g, '\\ ')}/**/**.ts`);
+      } else {
+        await executeCommand(`tsc ${resolve(file).replace(/\s/g, '\\ ')}`);
+      }
+    } catch (error) {
+      if (error?.code === 'MODULE_NOT_FOUND') {
+        throw error;
+      }
     }
-  } catch (ignored) {}
-  let transpiledFile: string = file.replace('.ts', '.js');
-  const result = await import(transpiledFile);
-  cleanupTranspiledFiles(file, folder);
-  return result;
-}
-
-function cleanupTranspiledFiles(file: string, folder?: string): void {
-  const transpiledFiles: Set<string> = new Set();
-  transpiledFiles.add(file.replace('.ts', '.js'));
-  if (folder) {
-    getAllFilesMatching(folder, '.js').forEach(value => {
-      transpiledFiles.add(value);
-    });
-  }
-  transpiledFiles.forEach(file => {
-    rmSync(file);
-  });
 }
 
 function getAllFilesMatching(containerFolder: string, fileExp: string): Set<string> {

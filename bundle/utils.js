@@ -1,30 +1,6 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transpileInMemory = exports.parseArguments = void 0;
+exports.transpileFiles = exports.parseArguments = void 0;
 const node_path_1 = require("node:path");
 const child_process_1 = require("child_process");
 const fs_1 = require("fs");
@@ -66,7 +42,7 @@ async function executeCommand(command, environment = {}) {
         });
     });
 }
-async function transpileInMemory(file, folder) {
+async function transpileFiles(file, folder) {
     try {
         if (folder) {
             await executeCommand(`tsc ${(0, node_path_1.resolve)(folder).replace(/\s/g, '\\ ')}/**/**.ts`);
@@ -75,25 +51,13 @@ async function transpileInMemory(file, folder) {
             await executeCommand(`tsc ${(0, node_path_1.resolve)(file).replace(/\s/g, '\\ ')}`);
         }
     }
-    catch (ignored) { }
-    let transpiledFile = file.replace('.ts', '.js');
-    const result = await (_a = transpiledFile, Promise.resolve().then(() => __importStar(require(_a))));
-    cleanupTranspiledFiles(file, folder);
-    return result;
-}
-exports.transpileInMemory = transpileInMemory;
-function cleanupTranspiledFiles(file, folder) {
-    const transpiledFiles = new Set();
-    transpiledFiles.add(file.replace('.ts', '.js'));
-    if (folder) {
-        getAllFilesMatching(folder, '.js').forEach(value => {
-            transpiledFiles.add(value);
-        });
+    catch (error) {
+        if (error?.code === 'MODULE_NOT_FOUND') {
+            throw error;
+        }
     }
-    transpiledFiles.forEach(file => {
-        (0, fs_1.rmSync)(file);
-    });
 }
+exports.transpileFiles = transpileFiles;
 function getAllFilesMatching(containerFolder, fileExp) {
     const result = new Set();
     if ((0, fs_1.lstatSync)(containerFolder).isDirectory()) {

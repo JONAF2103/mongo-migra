@@ -5,7 +5,7 @@ import {ClientSession, MongoClient} from "mongodb";
 import * as crypto from 'node:crypto';
 
 import {AvailableMigration, Configuration, Migration, MigrationStats, MigrationStatus} from "../../types";
-import {parseArguments, transpileInMemory} from "../../utils";
+import {parseArguments} from "../../utils";
 import {ADMIN_DBS} from "../../constants";
 
 interface DownMigrationProps {
@@ -59,9 +59,9 @@ async function executeDownMigration({mongoClient, dbName, availableMigrations, c
     if (migrationsDownAmount < numberOfMigrations) {
       console.log(`Down migration ${appliedMigration.name}...`);
       const availableMigration = availableMigrations.find(migration => migration.name === appliedMigration.name);
-      const downChecksum = await getFileChecksum(resolve(availableMigration.location, 'down.ts'));
+      const downChecksum = await getFileChecksum(resolve(availableMigration.location, 'down.js'));
       const downChecksumDiff = downChecksum !== appliedMigration.downChecksum;
-      const {down, post, validate} = await transpileInMemory(resolve(availableMigration.location, 'down.ts'), resolve(configuration.migrationsFolderPath));
+      const {down, post, validate} = await import(resolve(availableMigration.location, 'down.js'));
       const replicaSetEnabled = configuration.uri.indexOf('replicaSet') !== -1;
       let session: ClientSession = null;
       if (replicaSetEnabled) {
@@ -133,7 +133,7 @@ export default async function down(configuration: Configuration): Promise<void> 
   const availableMigrations: AvailableMigration[] = migrationsAvailable.map(name => {
     return {
       name,
-      location: `${migrationsFolder}/${name}`
+      location: `${migrationsFolder}/${name}`.replace(/\s/g, '\\ ')
     };
   });
   console.log('Checking available migrations:');

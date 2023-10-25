@@ -45,6 +45,7 @@ async function getFileChecksum(path) {
     });
 }
 async function executeDownMigration({ mongoClient, dbName, availableMigrations, changeLogCollectionName, numberOfMigrations, configuration }) {
+    var _a;
     const db = mongoClient.db(dbName);
     const changelogCollection = db.collection(changeLogCollectionName);
     const migrationsOnDatabase = changelogCollection.find();
@@ -74,9 +75,9 @@ async function executeDownMigration({ mongoClient, dbName, availableMigrations, 
         if (migrationsDownAmount < numberOfMigrations) {
             console.log(`Down migration ${appliedMigration.name}...`);
             const availableMigration = availableMigrations.find(migration => migration.name === appliedMigration.name);
-            const downChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'down.ts'));
+            const downChecksum = await getFileChecksum((0, node_path_1.resolve)(availableMigration.location, 'down.js'));
             const downChecksumDiff = downChecksum !== appliedMigration.downChecksum;
-            const { down, post, validate } = await (0, utils_1.transpileInMemory)((0, node_path_1.resolve)(availableMigration.location, 'down.ts'), (0, node_path_1.resolve)(configuration.migrationsFolderPath));
+            const { down, post, validate } = await (_a = (0, node_path_1.resolve)(availableMigration.location, 'down.js'), Promise.resolve().then(() => __importStar(require(_a))));
             const replicaSetEnabled = configuration.uri.indexOf('replicaSet') !== -1;
             let session = null;
             if (replicaSetEnabled) {
@@ -151,7 +152,7 @@ async function down(configuration) {
     const availableMigrations = migrationsAvailable.map(name => {
         return {
             name,
-            location: `${migrationsFolder}/${name}`
+            location: `${migrationsFolder}/${name}`.replace(/\s/g, '\\ ')
         };
     });
     console.log('Checking available migrations:');
