@@ -55,7 +55,7 @@ function muteConsole() {
 async function execute(args) {
     var _a, _b, _c;
     const actionName = args.get('action');
-    if (actionName === 'compile') {
+    if (actionName === 'compile' || actionName === 'cleanup') {
         return await (await (_a = (`./actions/${actionName}`), Promise.resolve().then(() => __importStar(require(_a))))).default(args);
     }
     const verbose = args.has('verbose');

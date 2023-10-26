@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transpileFiles = exports.parseArguments = void 0;
+exports.getAllFilesMatching = exports.cleanupTranspiledFiles = exports.transpileFiles = exports.parseArguments = void 0;
 const node_path_1 = require("node:path");
 const child_process_1 = require("child_process");
 const fs_1 = require("fs");
@@ -58,6 +58,18 @@ async function transpileFiles(file, folder) {
     }
 }
 exports.transpileFiles = transpileFiles;
+function cleanupTranspiledFiles(folders) {
+    const transpiledFiles = new Set();
+    for (const transpiledFolder of folders) {
+        getAllFilesMatching(transpiledFolder, '.js').forEach(value => {
+            transpiledFiles.add(value);
+        });
+    }
+    transpiledFiles.forEach(file => {
+        (0, fs_1.rmSync)(file);
+    });
+}
+exports.cleanupTranspiledFiles = cleanupTranspiledFiles;
 function getAllFilesMatching(containerFolder, fileExp) {
     const result = new Set();
     if ((0, fs_1.lstatSync)(containerFolder).isDirectory()) {
@@ -80,4 +92,5 @@ function getAllFilesMatching(containerFolder, fileExp) {
     }
     return result;
 }
+exports.getAllFilesMatching = getAllFilesMatching;
 //# sourceMappingURL=utils.js.map
