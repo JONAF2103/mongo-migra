@@ -33,7 +33,7 @@ function muteConsole() {
 async function execute(args: Map<string, string>): Promise<void> {
   const actionName = args.get('action');
 
-  if (actionName === 'compile') {
+  if (actionName === 'compile' || actionName === 'cleanup') {
     return await (await import((`./actions/${actionName}`))).default(args);
   }
 

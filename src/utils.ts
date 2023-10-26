@@ -53,7 +53,19 @@ export async function transpileFiles(file: string, folder?: string): Promise<voi
     }
 }
 
-function getAllFilesMatching(containerFolder: string, fileExp: string): Set<string> {
+export function cleanupTranspiledFiles(folders: string[]): void {
+  const transpiledFiles: Set<string> = new Set();
+  for (const transpiledFolder of folders) {
+    getAllFilesMatching(transpiledFolder, '.js').forEach(value => {
+      transpiledFiles.add(value);
+    });
+  }
+  transpiledFiles.forEach(file => {
+    rmSync(file);
+  });
+}
+
+export function getAllFilesMatching(containerFolder: string, fileExp: string): Set<string> {
   const result: Set<string> = new Set();
   if (lstatSync(containerFolder).isDirectory()) {
     const files = readdirSync(containerFolder);

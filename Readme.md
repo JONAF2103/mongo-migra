@@ -34,6 +34,7 @@ Here are a list of available commands:
 * `mongo-migra action=status`: shows the migrations status on the db.
 * `mongo-migra action=init`: generates the initial configuration in order to use this program.
 * `mongo-migra action=compile`: transpiles the typescript code into javascript to be available when you execute other actions like up.
+* `mongo-migra action=cleanup folders=<comaseparatedpaths>`: cleanup folders from js transpiled files.
 * In all the commands the param `config` can be set with a custom file path in order to load a different configuration.
 * You have an optional parameter `verbose` to output the configuration used by the migrator.
 
